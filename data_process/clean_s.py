@@ -5,8 +5,8 @@ import re
 import logging
 from pathlib import Path
 import random
-from argparse import Namespace
 import sentencepiece as spm
+import argparse
 
 class DataProcess(object):
     def __init__(self, args):
@@ -59,7 +59,6 @@ class DataProcess(object):
                 rstring += chr(inside_code)
             ss.append(rstring)
         return ''.join(ss)
-
 
     def clean_s(self, s, lang):
         if lang == 'en':
@@ -121,17 +120,17 @@ class DataProcess(object):
             print(s2, file=l2_out_f)
 
     def split(self, prefix, l1, l2, train_ratio = 0.99, valid_ratio = 0.01):
-        if Path(prefix, f'train.clean.{self.src_lang}').exists():
+        if Path(prefix, f'train.clean.{l1}').exists():
             print('train/valid splits exists.')
 
         if not Path(f'{prefix}.clean.{l1}').exists() and Path(f'{prefix}.clean.{l2}').exists():
-            self.clean_corpus(self.data_prefix,  self.src_lang, self.tgt_lang)
-            self.clean_corpus(self.test_prefix, self.src_lang, self.tgt_lang, ratio=-1, max_len= -1, min_len= -1)
+            self.clean_corpus(self.data_prefix,  l1, l2)
+            self.clean_corpus(self.test_prefix, l1, l2, ratio=-1, max_len= -1, min_len= -1)
         else:
-            line_num = sum(1 for line in open(f'{self.data_prefix}.clean.{self.src_lang}', encoding='utf-8'))
+            line_num = sum(1 for line in open(f'{self.data_prefix}.clean.{l1}', encoding='utf-8'))
             labels = list(range(line_num))
             random.shuffle(labels)  # 打乱标签的顺序
-            for lang in [self.src_lang, self.tgt_lang]:
+            for lang in [l1, l2]:
                 train_f = open(Path(prefix, f'train.clean.{lang}'), 'w', encoding='utf-8')
                 valid_f = open(Path(prefix, f'valid.clean.{lang}'), 'w', encoding='utf-8')
                 count = 0
@@ -145,14 +144,15 @@ class DataProcess(object):
                 valid_f.close()
 
 
-class SpmmBinary(object):
+class sub_word(object):
 
     def __init__(self, args):
-        super(SpmmBinary, self).__init__()
+        super(sub_word, self).__init__()
         self.src_lang = args.src_lang
         self.tgt_lang = args.tgt_lang
+        self.file_prefix = args.data_dir
 
-    def Spm(self, prefix, vocab_size = 8000):
+    def spm(self, prefix, vocab_size = 8000):
 
         if Path(prefix, f'spm{vocab_size}.model').exists():
             print(f'{prefix}/spm{vocab_size}.model exists, skipping spm_train.')
@@ -193,10 +193,17 @@ class SpmmBinary(object):
                         print(' '.join(tok), file=out_f)
 
 
+parser = argparse.ArgumentParser(description='clean sentences')
+parser.add_argument('--data_dir', type=str, default='./TranslationData/raw_data', help='raw data dir')
+parser.add_argument('--src_lang', type=str, default='en')  # 不能--src-lang命名
+parser.add_argument('--tgt_lang', type=str, default='zh')
 
+args = parser.parse_args()
 
+if __name__ == "__main__":
 
-
+    DataProcess(args).split(args.data_dir, args.src_lang, args.tgt_lang)
+    sub_word(args).spm(args.data_dir)
 
 
 
