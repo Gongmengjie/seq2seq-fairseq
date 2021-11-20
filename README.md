@@ -1,6 +1,6 @@
 # seq2seq-fairseq
 
-This project is a simplified version of fairseq, which rewrites the machine translation process of RNN and Transfomer, making it easier for beginners to implement the whole process
+本项目是fairseq的简化版，重写了RNN和Transfomer的机器翻译流程，
 
 1. 数据集：
    <a href='https://drive.google.com/open?id=1EX8eE5YWBxCaohBO8Fh4e2j3b9C2bTVQ'>Google Drive下载</a> 或者 [百度网盘链接](链接：https://pan.baidu.com/s/17wQqIns_dyPVgNGYo191xg )
